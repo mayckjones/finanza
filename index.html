@@ -838,7 +838,8 @@ window.addFix = async function(){
   const due=parseInt(document.getElementById('fixDue').value)||null;
   if(!name||isNaN(val)||val<=0){alert('Preencha nome e valor.');return;}
   try{
-    await addDoc(fixedRef(),{name,val,due,createdAt:Date.now()});
+    // salva com monthKey do mês atual e pinned=false por padrão
+    await addDoc(fixedRef(),{name,val,due,pinned:false,monthKey:mk(),createdAt:Date.now()});
     document.getElementById('fixName').value='';
     document.getElementById('fixVal').value='';
     document.getElementById('fixDue').value='';
@@ -846,23 +847,48 @@ window.addFix = async function(){
   }catch(e){alert('Erro ao salvar: '+e.message);}
 };
 
+// delFix: se fixada e estamos em mês diferente do original → exclui só deste mês via "skip"
+// se não fixada ou estamos no mês original → exclui o documento inteiro
 window.delFix = async function(id){
   if(!currentUser)return;
   const item=fixed.find(f=>f.id===id);
-  if(item&&item.pinned){alert('⚠️ Esta despesa está fixada. Desfixe primeiro para poder excluir.');return;}
-  if(!confirm('Remover esta despesa fixa de todos os meses?'))return;
-  try{
-    await deleteDoc(doc(db,`users/${currentUser.uid}/fixed/${id}`));
-    showSaved();
-  }catch(e){alert('Erro: '+e.message);}
+  if(!item)return;
+  const m=mk();
+  const isOriginalMonth = (item.monthKey===m);
+
+  if(item.pinned && !isOriginalMonth){
+    // exclui só deste mês: salva lista de meses pulados dentro do próprio doc
+    if(!confirm('Remover esta despesa apenas de '+MN[cMonth]+' '+cYear+'?'))return;
+    try{
+      const skipped=item.skippedMonths||[];
+      if(!skipped.includes(m))skipped.push(m);
+      await updateDoc(doc(db,`users/${currentUser.uid}/fixed/${id}`),{skippedMonths:skipped});
+      showSaved();
+    }catch(e){alert('Erro: '+e.message);}
+  } else {
+    // exclui o documento inteiro (mês original ou não fixada)
+    const msg = item.pinned
+      ? 'Remover esta despesa fixada de TODOS os meses permanentemente?'
+      : 'Remover esta despesa?';
+    if(!confirm(msg))return;
+    try{
+      await deleteDoc(doc(db,`users/${currentUser.uid}/fixed/${id}`));
+      showSaved();
+    }catch(e){alert('Erro: '+e.message);}
+  }
 };
 
+// togglePin: fixar/desfixar. Ao fixar, limpa skippedMonths do mês atual se houver
 window.togglePin = async function(id){
   if(!currentUser)return;
   const item=fixed.find(f=>f.id===id);
   if(!item)return;
+  const nowPinned=!item.pinned;
   try{
-    await updateDoc(doc(db,`users/${currentUser.uid}/fixed/${id}`),{pinned:!item.pinned});
+    const update={pinned:nowPinned};
+    // ao fixar, garante que monthKey está salvo
+    if(nowPinned && !item.monthKey) update.monthKey=mk();
+    await updateDoc(doc(db,`users/${currentUser.uid}/fixed/${id}`),update);
     showSaved();
   }catch(e){alert('Erro: '+e.message);}
 };
@@ -929,7 +955,7 @@ function renderAlerts(){
   const todayD=now.getDate();
   const box=document.getElementById('alertsBox');
   const items=[];
-  fixed.forEach(f=>{
+  filteredFix().forEach(f=>{
     if(!f.due)return;
     const diff=f.due-todayD;
     if(diff===0)items.push({cls:'danger',msg:`🚨 <strong>${f.name}</strong> vence <strong>HOJE</strong> (dia ${f.due})`});
@@ -976,11 +1002,27 @@ function filteredVar(){
   return items;
 }
 function filteredFix(){
-  if(!fixFilter)return fixed;
+  const m=mk();
+  // filtra quais despesas fixas aparecem no mês atual:
+  // - não fixada: só aparece no monthKey dela
+  // - fixada: aparece em todos os meses >= monthKey, exceto os skipped
+  let items=fixed.filter(f=>{
+    const skipped=f.skippedMonths||[];
+    if(skipped.includes(m))return false; // excluída deste mês
+    if(f.pinned){
+      // aparece no mês de criação em diante
+      const origin=f.monthKey||'0000-00';
+      return m>=origin;
+    } else {
+      // só aparece no mês de criação
+      return (f.monthKey||'0000-00')===m;
+    }
+  });
+  if(!fixFilter)return items;
   const td=now.getDate();
-  if(fixFilter==='soon')return fixed.filter(f=>f.due&&f.due-td>=0&&f.due-td<=2);
-  if(fixFilter==='today')return fixed.filter(f=>f.due===td);
-  return fixed;
+  if(fixFilter==='soon')return items.filter(f=>f.due&&f.due-td>=0&&f.due-td<=2);
+  if(fixFilter==='today')return items.filter(f=>f.due===td);
+  return items;
 }
 
 // ── Charts ──
@@ -1051,18 +1093,23 @@ function renderFixList(){
   const items=filteredFix();
   const el=document.getElementById('fixList');
   const td=now.getDate();
-  if(!items.length){el.innerHTML='<div class="empty">Nenhuma despesa fixa cadastrada</div>';return;}
+  const m=mk();
+  if(!items.length){el.innerHTML='<div class="empty">Nenhuma despesa fixa neste mês</div>';return;}
   el.innerHTML=items.map(f=>{
     let dcls='ok',dtxt='';
     if(f.due){const diff=f.due-td;dtxt=`Dia ${f.due}`;if(diff===0){dcls='fire';dtxt='🔥 Vence hoje';}else if(diff===1){dcls='warn';dtxt='⏰ Amanhã';}else if(diff===2){dcls='warn';dtxt='⚠️ Em 2 dias';}}
     const pinned=!!f.pinned;
+    const isOriginalMonth=(f.monthKey||'0000-00')===m;
+    // label do botão excluir
+    const delTitle=pinned&&!isOriginalMonth?'Remover só deste mês':'Excluir';
     return `<div class="fix-item${pinned?' pinned':''}">
-      <button class="btn-pin${pinned?' active':''}" onclick="togglePin('${f.id}')" title="${pinned?'Desfixar':'Fixar'}">${pinned?'📌':'📍'}</button>
+      <button class="btn-pin${pinned?' active':''}" onclick="togglePin('${f.id}')" title="${pinned?'Desfixar (parar de repetir)':'Fixar (repetir todo mês)'}">${pinned?'📌':'📍'}</button>
       <span class="fix-name">${f.name}</span>
       ${f.due?`<span class="fix-due ${dcls}">${dtxt}</span>`:''}
       <span class="fix-amt">${fmt(f.val)}</span>
-      <button class="btn-del" onclick="delFix('${f.id}')${pinned?"return false":''}" title="${pinned?'Desfixe para excluir':'Excluir'}">&#x2715;</button>
-    </div>${pinned?`<div class="pin-warn">📌 Fixada — desfixe antes de excluir</div>`:''}`;
+      <button class="btn-del" onclick="delFix('${f.id}')" title="${delTitle}">&#x2715;</button>
+    </div>${pinned&&!isOriginalMonth?`<div class="pin-warn">📌 Fixada — ✕ remove só deste mês</div>`:''}
+    ${pinned&&isOriginalMonth?`<div class="pin-warn" style="color:var(--blue);background:var(--blue-l);border-color:#bfdbfe">📌 Fixada — repete todo mês</div>`:''}`;
   }).join('');
 }
 function renderVarList(){
@@ -1093,9 +1140,10 @@ window.updateUI = function(){
   const m=mk();
   const inc=parseFloat(document.getElementById('receitaInput').value)||0;
   const allVar=expenses.filter(e=>e.monthKey===m);
-  const totalFix=fixed.reduce((s,f)=>s+f.val,0);
+  const visibleFix=filteredFix();
+  const totalFix=visibleFix.reduce((s,f)=>s+f.val,0);
   const totalVar=allVar.reduce((s,e)=>s+e.val,0);
-  const filtVar=filteredVar(), filtFix=filteredFix();
+  const filtVar=filteredVar(), filtFix=visibleFix;
   const fTotalVar=filtVar.reduce((s,e)=>s+e.val,0);
   const fTotalFix=filtFix.reduce((s,f)=>s+f.val,0);
   const total=totalFix+totalVar, saldo=inc-total;
