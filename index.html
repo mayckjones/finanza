@@ -268,163 +268,102 @@ header{background:linear-gradient(160deg,#1e3a8a 0%,#2563eb 55%,#3b82f6 100%);pa
 
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 
-/* ── TOUCH TARGET GLOBAL ── */
-button,
-.cat-chip,.f-chip,.dd-month,.chart-tab,.dl-opt,.btn-sm{
-  min-height:36px;
-  touch-action:manipulation;
-}
-
 /* ══════════════════════════════════════════
-   MOBILE FIRST — até 480px
+   MOBILE — até 480px
 ══════════════════════════════════════════ */
 @media(max-width:480px){
-
-  /* ── Body overflow guard ── */
   html,body{overflow-x:hidden;width:100%;}
 
-  /* ── Header ── */
+  /* touch targets apenas no mobile */
+  button{touch-action:manipulation;}
+  .btn-reg,.btn-auth,.btn-auth-ghost,.btn-download,.btn-add-fix{min-height:44px;}
+  .btn-sm,.btn-del,.btn-pin,.btn-signout,.month-arrows button{min-height:32px;}
+  .cat-chip,.f-chip{min-height:34px;}
+
   header{padding:.85rem .95rem 3.2rem;}
-  .hdr-top{gap:.4rem;}
   .logo-txt{font-size:1.1rem;}
-  .user-badge{font-size:.65rem;padding:4px 8px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .user-badge{font-size:.65rem;padding:4px 8px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .btn-signout{font-size:.65rem;padding:4px 8px;}
 
-  /* ── Auth card ── */
   .auth-card{padding:1.5rem 1.2rem;width:94%;}
 
-  /* ── Month picker dropdown ── */
-  .month-dd{min-width:220px;left:50%;}
-  .month-arrows button{width:34px;height:34px;font-size:1.1rem;}
-  .month-pill{padding:6px 14px;}
-
-  /* ── Saldo ── */
+  .month-dd{min-width:220px;}
   .saldo-val{font-size:2.1rem;}
   .saldo-sub{font-size:.68rem;padding:0 .5rem;}
 
-  /* ── Main container ── */
   .main{padding:0 .75rem 6rem;margin:-2rem auto 0;}
 
-  /* ── Top cards ── */
   .cards-row{gap:.5rem;}
   .mini-card{padding:.75rem .85rem;gap:.5rem;}
   .mini-ico{width:36px;height:36px;font-size:1rem;}
   .mini-v{font-size:.88rem;}
 
-  /* ── Receita ── */
   .receita-card{padding:.7rem .9rem;}
-  .receita-card label{font-size:.63rem;}
-  .receita-card input{font-size:1rem;}
 
-  /* ── Section headers ── */
   .sec-hdr{flex-wrap:wrap;gap:.3rem;}
   .sec-hdr-r{gap:.3rem;}
-  .sec-total-txt{font-size:.66rem;}
-  .btn-sm{font-size:.68rem;padding:4px 8px;min-height:30px;}
 
-  /* ── Card heads ── */
   .card-head{padding:.7rem .9rem;}
-  .card-head span{font-size:.82rem;}
-  .card-head-total{font-size:.78rem;}
 
-  /* ── Chart tabs ── */
-  .chart-tab{font-size:.67rem;padding:.22rem .5rem;}
-
-  /* ── Filter bar ── */
-  .filter-bar{padding:.45rem .75rem;gap:.28rem;}
-  .filter-bar-lbl{font-size:.62rem;}
-  .f-chip{font-size:.65rem;padding:.22rem .5rem;min-height:30px;}
+  /* filter bar */
+  .filter-bar{padding:.45rem .75rem;gap:.3rem;}
+  .f-chip{font-size:.66rem;padding:.22rem .55rem;}
   .f-inputs{padding:.45rem .75rem;gap:.35rem;}
-  .f-inp{font-size:.75rem;padding:.42rem .6rem;width:100%;}
-  .f-ok{padding:.42rem .65rem;font-size:.75rem;}
+  .f-inp{font-size:.76rem;width:100%;}
 
-  /* ── Quick add ── */
+  /* quick add */
   .quick-add{padding:.65rem .75rem;}
-  .qa-lbl{font-size:.63rem;}
-  .cat-chip{font-size:.67rem;padding:.24rem .52rem;min-height:32px;}
-  .qa-input,.qa-val,.qa-date{font-size:.82rem;padding:.52rem .65rem;}
-  /* Stack val field full width on very small screens */
-  .qa-row{grid-template-columns:1fr;gap:.4rem;}
-  .qa-val{width:100%;}
-  .btn-reg{padding:.65rem;font-size:.88rem;min-height:44px;}
+  .cat-chip{font-size:.68rem;padding:.24rem .55rem;}
+  .qa-row{grid-template-columns:1fr 100px;gap:.4rem;}
+  .qa-input,.qa-val,.qa-date{font-size:.82rem;}
 
-  /* ── Fixed add row: stack vertically ── */
+  /* fixed add row */
   .fixed-add-row{
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:auto auto;
-    gap:.4rem;
+    grid-template-columns:1fr 80px 72px auto;
+    gap:.35rem;
     padding:.55rem .75rem;
   }
-  .fixed-add-row .f-add-inp:first-child{grid-column:1/-1;}
-  .btn-add-fix{grid-column:2;min-height:40px;padding:.5rem;}
 
-  /* ── Var item list ── */
-  .var-item{
-    grid-template-columns:34px 1fr auto;
-    grid-template-rows:auto auto;
-    padding:.55rem .75rem;
-    gap:.4rem .45rem;
-  }
-  .vi-ico{width:34px;height:34px;font-size:.88rem;grid-row:1/3;}
-  .vi-body{grid-column:2;grid-row:1;}
-  .vi-amt{grid-column:3;grid-row:1;font-size:.83rem;}
-  .btn-del{grid-column:3;grid-row:2;justify-self:end;min-height:30px;min-width:30px;}
-  .vi-cat{font-size:.78rem;}
-  .vi-desc{font-size:.68rem;}
-  .vi-time{font-size:.63rem;}
+  /* var item */
+  .var-item{padding:.55rem .75rem;}
+  .vi-cat{font-size:.8rem;}
+  .vi-desc{font-size:.7rem;}
+  .vi-time{font-size:.64rem;}
+  .vi-amt{font-size:.84rem;}
 
-  /* ── Fix item ── */
-  .fix-item{padding:.52rem .75rem;gap:.4rem;flex-wrap:wrap;}
-  .fix-name{font-size:.8rem;min-width:0;flex:1 1 auto;}
-  .fix-due{font-size:.64rem;padding:2px 5px;}
-  .fix-amt{font-size:.82rem;}
-  .btn-pin{font-size:.85rem;min-height:32px;min-width:28px;}
-  .btn-del{min-height:32px;min-width:28px;}
+  /* fix item */
+  .fix-item{padding:.52rem .75rem;gap:.4rem;}
+  .fix-name{font-size:.81rem;}
+  .fix-due{font-size:.64rem;}
+  .fix-amt{font-size:.83rem;}
   .pin-warn{font-size:.65rem;padding:.28rem .75rem;}
 
-  /* ── Cat accumulator ── */
-  .cat-acc-bar-wrap{width:50px;}
-  .cat-acc-val{min-width:65px;font-size:.74rem;}
-  .cat-acc-name{font-size:.76rem;}
-
-  /* ── Download button ── */
-  .btn-download{font-size:.85rem;padding:.7rem;min-height:48px;}
-  .dl-opt{padding:.6rem .85rem;}
-  .dl-opt-title{font-size:.78rem;}
-  .dl-opt-sub{font-size:.66rem;}
-
-  /* ── Save badge ── */
-  .save-badge{bottom:.8rem;right:.8rem;font-size:.65rem;}
-
-  /* ── Alerts ── */
-  .alert-item{font-size:.72rem;padding:.52rem .75rem;}
+  .alert-item{font-size:.73rem;padding:.52rem .75rem;}
+  .save-badge{bottom:.8rem;right:.8rem;}
 }
 
 /* ══════════════════════════════════════════
-   EXTRA SMALL — até 360px (e.g. Galaxy S8)
+   EXTRA PEQUENO — até 360px
 ══════════════════════════════════════════ */
 @media(max-width:360px){
   .logo-txt{font-size:.95rem;}
-  .user-badge{max-width:105px;font-size:.6rem;}
+  .user-badge{max-width:110px;}
   .saldo-val{font-size:1.85rem;}
-  .cards-row{grid-template-columns:1fr 1fr;}
   .mini-v{font-size:.8rem;}
-  .sec-title{font-size:.88rem;}
   .cat-chip{font-size:.63rem;padding:.2rem .45rem;}
-  .fixed-add-row{grid-template-columns:1fr;}
-  .fixed-add-row .btn-add-fix{grid-column:1;}
-  .var-item{grid-template-columns:30px 1fr auto;}
-  .vi-ico{width:30px;height:30px;}
-  .qa-row{grid-template-columns:1fr;}
+  .fixed-add-row{grid-template-columns:1fr 72px 65px auto;}
+  .qa-row{grid-template-columns:1fr 88px;}
 }
 
 /* ══════════════════════════════════════════
-   DESKTOP — acima de 480px
+   DESKTOP — acima de 480px (restaura tudo)
 ══════════════════════════════════════════ */
 @media(min-width:481px){
   .main{max-width:520px;}
   .qa-row{grid-template-columns:1fr 108px;}
   .fixed-add-row{grid-template-columns:1fr 85px 80px auto;}
+  /* garante que não herda min-height de regra alguma */
+  button,.cat-chip,.f-chip,.dd-month,.chart-tab,.btn-sm{min-height:unset;}
 }
 </style>
 </head>
